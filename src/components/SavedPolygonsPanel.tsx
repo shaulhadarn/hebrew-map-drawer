@@ -37,7 +37,7 @@ export const SavedPolygonsPanel = ({
               >
                 <h3 className="font-medium">{polygon.name}</h3>
                 <p className="text-sm text-gray-600 mt-1">
-                  שטח: {(polygon.area / 10000).toFixed(2)} דונם
+                  שטח: {polygon.area.toFixed(2)} מ"ר
                 </p>
                 <p className="text-sm text-gray-600">
                   מחיר: ₪{polygon.estimatedPrice.toFixed(2)}

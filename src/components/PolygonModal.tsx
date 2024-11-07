@@ -15,7 +15,6 @@ export const PolygonModal = ({ polygon, onClose, onSave }: PolygonModalProps) =>
   };
 
   const handleSendToDrone = () => {
-    // In a real app, this would send the data to a drone service
     alert('נשלח לחברת הרחפנים בהצלחה!');
     onClose();
   };
@@ -40,7 +39,7 @@ export const PolygonModal = ({ polygon, onClose, onSave }: PolygonModalProps) =>
           <div>
             <label className="block text-sm font-medium mb-1">שטח</label>
             <p className="p-2 bg-gray-50 rounded-md">
-              {(polygon.area / 10000).toFixed(2)} דונם
+              {polygon.area.toFixed(2)} מ"ר
             </p>
           </div>
 

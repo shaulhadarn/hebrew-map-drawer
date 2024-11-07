@@ -38,22 +38,29 @@ const SearchControl = () => {
   };
 
   return (
-    <div className="absolute top-4 left-4 z-[1000] flex gap-2 bg-white p-2 rounded-md shadow-md">
-      <Input
-        type="text"
-        value={searchQuery}
-        onChange={(e) => setSearchQuery(e.target.value)}
-        placeholder="חפש מיקום..."
-        className="w-64"
-        onKeyPress={(e) => {
-          if (e.key === 'Enter') {
-            handleSearch();
-          }
-        }}
-      />
-      <Button onClick={handleSearch} variant="outline" size="icon">
-        <Search className="h-4 w-4" />
-      </Button>
+    <div className="absolute top-4 left-4 z-[1000] flex gap-2">
+      <div className="bg-white rounded-lg shadow-lg p-2 flex gap-2">
+        <Input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="חפש מיקום..."
+          className="w-64 border-gray-200 focus:ring-2 focus:ring-primary focus:border-transparent"
+          onKeyPress={(e) => {
+            if (e.key === 'Enter') {
+              handleSearch();
+            }
+          }}
+        />
+        <Button 
+          onClick={handleSearch} 
+          variant="default"
+          size="icon"
+          className="bg-primary hover:bg-primary/90"
+        >
+          <Search className="h-4 w-4" />
+        </Button>
+      </div>
     </div>
   );
 };
