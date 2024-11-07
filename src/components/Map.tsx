@@ -5,6 +5,17 @@ import { PolygonData } from '../types/polygon';
 import { PolygonModal } from './PolygonModal';
 import { SavedPolygonsPanel } from './SavedPolygonsPanel';
 
+// Configure Leaflet Draw measurement formatting
+L.drawLocal.draw.handlers.polygon.tooltip.start = 'לחץ כדי להתחיל לצייר פוליגון';
+L.drawLocal.draw.handlers.polygon.tooltip.cont = 'לחץ להמשך ציור הפוליגון';
+L.drawLocal.draw.handlers.polygon.tooltip.end = 'לחץ על הנקודה הראשונה לסיום';
+
+// Add area measurement formatting
+L.GeometryUtil.readableArea = (area: number) => {
+  const dunams = area / 10000;
+  return dunams.toFixed(2) + ' דונם';
+};
+
 const Map = () => {
   const mapRef = useRef<L.Map | null>(null);
   const [showModal, setShowModal] = useState(false);
@@ -34,6 +45,8 @@ const Map = () => {
           polygon: {
             allowIntersection: false,
             showArea: true,
+            metric: true,
+            feet: false,
           },
         },
         edit: {
