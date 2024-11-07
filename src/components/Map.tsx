@@ -4,6 +4,8 @@ import 'leaflet-draw';
 import { PolygonData } from '../types/polygon';
 import { PolygonModal } from './PolygonModal';
 import { SavedPolygonsPanel } from './SavedPolygonsPanel';
+import { MapContainer, TileLayer } from 'react-leaflet';
+import SearchControl from './SearchControl';
 
 // Configure Leaflet Draw measurement formatting
 L.drawLocal.draw.handlers.polygon.tooltip.start = 'לחץ כדי להתחיל לצייר פוליגון';
@@ -66,7 +68,7 @@ const Map = () => {
         ]);
         
         const area = L.GeometryUtil.geodesicArea(layer.getLatLngs()[0]);
-        const estimatedPrice = area * 0.5; // Example price calculation
+        const estimatedPrice = area * 0.5;
 
         const newPolygon: PolygonData = {
           id: Date.now().toString(),
@@ -103,7 +105,14 @@ const Map = () => {
 
   return (
     <div className="relative h-screen">
-      <div id="map" className="h-full" />
+      <MapContainer center={[31.7683, 35.2137]} zoom={8} className="h-full">
+        <TileLayer
+          url="https://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}"
+          subdomains={['mt0', 'mt1', 'mt2', 'mt3']}
+          maxZoom={20}
+        />
+        <SearchControl />
+      </MapContainer>
       
       <button
         onClick={() => setShowSavedPanel(true)}
