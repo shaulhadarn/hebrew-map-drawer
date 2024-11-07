@@ -4,7 +4,7 @@ import 'leaflet-draw';
 import { PolygonData } from '../types/polygon';
 import { PolygonModal } from './PolygonModal';
 import { SavedPolygonsPanel } from './SavedPolygonsPanel';
-import { MapContainer, TileLayer } from 'react-leaflet';
+import { MapContainer, TileLayer, useMap } from 'react-leaflet';
 import SearchControl from './SearchControl';
 
 // Configure Leaflet Draw measurement formatting
@@ -18,86 +18,93 @@ L.GeometryUtil.readableArea = (area: number) => {
   return dunams.toFixed(2) + ' דונם';
 };
 
-const Map = () => {
-  const mapRef = useRef<L.Map | null>(null);
+const MapDrawControl = () => {
+  const map = useMap();
   const [showModal, setShowModal] = useState(false);
   const [currentPolygon, setCurrentPolygon] = useState<PolygonData | null>(null);
   const [savedPolygons, setSavedPolygons] = useState<PolygonData[]>([]);
-  const [showSavedPanel, setShowSavedPanel] = useState(false);
 
   useEffect(() => {
-    if (!mapRef.current) {
-      const map = L.map('map').setView([31.7683, 35.2137], 8);
+    const drawnItems = new L.FeatureGroup();
+    map.addLayer(drawnItems);
 
-      L.tileLayer('https://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
-        maxZoom: 20,
-        subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
-      }).addTo(map);
-
-      const drawnItems = new L.FeatureGroup();
-      map.addLayer(drawnItems);
-
-      const drawControl = new L.Control.Draw({
-        draw: {
-          marker: false,
-          circle: false,
-          circlemarker: false,
-          rectangle: false,
-          polyline: false,
-          polygon: {
-            allowIntersection: false,
-            showArea: true,
-            metric: true,
-            feet: false,
-          },
+    const drawControl = new L.Control.Draw({
+      draw: {
+        marker: false,
+        circle: false,
+        circlemarker: false,
+        rectangle: false,
+        polyline: false,
+        polygon: {
+          allowIntersection: false,
+          showArea: true,
+          metric: true,
+          feet: false,
         },
-        edit: {
-          featureGroup: drawnItems,
-        },
-      });
+      },
+      edit: {
+        featureGroup: drawnItems,
+      },
+    });
 
-      map.addControl(drawControl);
+    map.addControl(drawControl);
 
-      map.on(L.Draw.Event.CREATED, (e: any) => {
-        const layer = e.layer;
-        drawnItems.addLayer(layer);
-        
-        const coordinates = layer.getLatLngs()[0].map((latLng: L.LatLng) => [
-          latLng.lat,
-          latLng.lng,
-        ]);
-        
-        const area = L.GeometryUtil.geodesicArea(layer.getLatLngs()[0]);
-        const estimatedPrice = area * 0.5;
+    map.on(L.Draw.Event.CREATED, (e: any) => {
+      const layer = e.layer;
+      drawnItems.addLayer(layer);
+      
+      const coordinates = layer.getLatLngs()[0].map((latLng: L.LatLng) => [
+        latLng.lat,
+        latLng.lng,
+      ]);
+      
+      const area = L.GeometryUtil.geodesicArea(layer.getLatLngs()[0]);
+      const estimatedPrice = area * 0.5;
 
-        const newPolygon: PolygonData = {
-          id: Date.now().toString(),
-          coordinates,
-          area,
-          estimatedPrice,
-          createdAt: new Date().toISOString(),
-          name: `פוליגון ${savedPolygons.length + 1}`,
-        };
+      const newPolygon: PolygonData = {
+        id: Date.now().toString(),
+        coordinates,
+        area,
+        estimatedPrice,
+        createdAt: new Date().toISOString(),
+        name: `פוליגון ${savedPolygons.length + 1}`,
+      };
 
-        setCurrentPolygon(newPolygon);
-        setShowModal(true);
-      });
-
-      mapRef.current = map;
-    }
+      setCurrentPolygon(newPolygon);
+      setShowModal(true);
+    });
 
     return () => {
-      if (mapRef.current) {
-        mapRef.current.remove();
-        mapRef.current = null;
-      }
+      map.removeControl(drawControl);
+      map.off(L.Draw.Event.CREATED);
     };
-  }, [savedPolygons.length]);
+  }, [map, savedPolygons.length]);
 
   const handleSavePolygon = (polygon: PolygonData) => {
     setSavedPolygons([...savedPolygons, polygon]);
     setShowModal(false);
   };
+
+  const handleDeletePolygon = (id: string) => {
+    setSavedPolygons(savedPolygons.filter((p) => p.id !== id));
+  };
+
+  return (
+    <>
+      {showModal && currentPolygon && (
+        <PolygonModal
+          polygon={currentPolygon}
+          onClose={() => setShowModal(false)}
+          onSave={handleSavePolygon}
+        />
+      )}
+    </>
+  );
+};
+
+const Map = () => {
+  const [savedPolygons, setSavedPolygons] = useState<PolygonData[]>([]);
+  const [showSavedPanel, setShowSavedPanel] = useState(false);
 
   const handleDeletePolygon = (id: string) => {
     setSavedPolygons(savedPolygons.filter((p) => p.id !== id));
@@ -112,6 +119,7 @@ const Map = () => {
           maxZoom={20}
         />
         <SearchControl />
+        <MapDrawControl />
       </MapContainer>
       
       <button
@@ -120,14 +128,6 @@ const Map = () => {
       >
         פוליגונים שמורים
       </button>
-
-      {showModal && currentPolygon && (
-        <PolygonModal
-          polygon={currentPolygon}
-          onClose={() => setShowModal(false)}
-          onSave={handleSavePolygon}
-        />
-      )}
 
       {showSavedPanel && (
         <SavedPolygonsPanel
